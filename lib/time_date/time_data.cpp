@@ -4,55 +4,55 @@
 time_data::time_data(const char* date, const char* time)
 {
     //Clear all
-    _seconds.clear();
-    _minutes.clear();
-    _hours.clear();
-    _date.clear();
-    _month.clear();
-    _year.clear();
+    seconds.clear();
+    minutes.clear();
+    hours.clear();
+    date.clear();
+    month.clear();
+    year.clear();
     // sample input: date = "Dec 06 2009", time = "12:34:56"
-    _year.tens = StringToUint8(date + 7);
-    _year.ones = StringToUint8(date + 9);
+    year.tens = StringToUint8(date + 7);
+    year.ones = StringToUint8(date + 9);
     // Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec
     switch (date[0])
     {
     case 'J':
         if ( date[1] == 'a' )
-            _month.ones = 1u;
+            month.ones = 1u;
         else if ( date[2] == 'n' )
-            _month.ones = 6u;
+            month.ones = 6u;
         else
-            _month.ones = 7u;
+            month.ones = 7u;
         break;
     case 'F':
-        _month.ones = 2u;
+        month.ones = 2u;
         break;
     case 'A':
-        _month.ones = (date[1] == 'p') ? 4u : 8u;
+        month.ones = (date[1] == 'p') ? 4u : 8u;
         break;
     case 'M':
-        _month.ones = (date[2] == 'r') ? 3u : 5u;
+        month.ones = (date[2] == 'r') ? 3u : 5u;
         break;
     case 'S':
-        _month.ones = 9u;
+        month.ones = 9u;
         break;
     case 'O':
-        _month.ones = 0u;
-        _month.tens = 1u;
+        month.ones = 0u;
+        month.tens = 1u;
         break;
     case 'N':
-        _month.ones = 1u;
-        _month.tens = 1u;
+        month.ones = 1u;
+        month.tens = 1u;
         break;
     case 'D':
-        _month.ones = 2;
-        _month.tens = 1;
+        month.ones = 2;
+        month.tens = 1;
         break;
     }
-    _date.init(StringToUint8(date + 4));
-    _hours.init(StringToUint8(time));
-    _minutes.init(StringToUint8(time + 3));
-    _seconds.init(StringToUint8(time + 6));
+    date.init(StringToUint8(date + 4));
+    hours.init(StringToUint8(time));
+    minutes.init(StringToUint8(time + 3));
+    seconds.init(StringToUint8(time + 6));
 }
 
 time_data::~time_data()

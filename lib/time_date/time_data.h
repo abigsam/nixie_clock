@@ -15,18 +15,21 @@ typedef struct bcd_t
         this->tens = 0u;
         this->ones = 0u;
     }
+    uint8_t combine() {
+        return ((this->ones & 0x0fu) | ((this->tens << 4) & 0xf0u));
+    }
 };
 
 
 class time_data
 {
-private:
-    bcd_t _seconds;
-    bcd_t _minutes;
-    bcd_t _hours;
-    bcd_t _date;
-    bcd_t _month;
-    bcd_t _year;
+public:
+    bcd_t seconds;
+    bcd_t minutes;
+    bcd_t hours;
+    bcd_t date;
+    bcd_t month;
+    bcd_t year;
 
 private:
     uint8_t StringToUint8(const char* pString);
@@ -34,6 +37,10 @@ private:
 public:
     time_data(const char* date, const char* time);
     ~time_data();
+    void add_minutes(uint8_t m);
+    void add_hours(uint8_t m);
+    void sub_minutes(uint8_t m);
+    void sub_hours(uint8_t m);
 };
 
 
