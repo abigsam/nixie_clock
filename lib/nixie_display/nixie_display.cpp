@@ -20,7 +20,7 @@ void nixie_display::clear()
     
 }
 
-void nixie_display::display(time_data *curr_time, uint8_t point_mask)
+void nixie_display::display(DateTime *curr_time, uint8_t point_mask)
 {
 
 }

@@ -1,13 +1,24 @@
 #include <Arduino.h>
+#include "RTClib.h"
 
-// void setup() {
-//   // put your setup code here, to run once:
-// }
+RTC_DS3231 rtc;
+DateTime curr_time;
 
-// void loop() {
-//   // put your main code here, to run repeatedly:
-// }
+void setup () {
+    if (! rtc.begin()) {
+        while(1);
+    }
 
-void main () {
-  
+    if (rtc.lostPower()) {
+        // When time needs to be set on a new device, or after a power loss, the
+        // following line sets the RTC to the date & time this sketch was compiled
+        rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    }
+}
+
+void loop () {
+    curr_time = rtc.now();
+
+    
+    delay(3000);
 }

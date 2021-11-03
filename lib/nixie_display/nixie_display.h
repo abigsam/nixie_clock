@@ -3,8 +3,7 @@
 
 #include <Arduino.h>
 #include <SPI.h>
-#include "time_data.h"
-// #include "nixie_clock_defines.h"
+#include "RTClib.h"
 
 class nixie_display
 {
@@ -15,7 +14,7 @@ public:
     ~nixie_display();
     // void init();
     void clear();
-    void display(time_data *curr_time, uint8_t point_mask);
+    void display(DateTime *curr_time, uint8_t point_mask);
 };
 
 
