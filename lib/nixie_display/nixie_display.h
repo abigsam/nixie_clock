@@ -14,7 +14,7 @@ public:
     ~nixie_display();
     // void init();
     void clear();
-    void display(DateTime *curr_time, uint8_t point_mask);
+    void display(DateTime *curr_time, uint8_t point_mask = 0u);
 };
 
 
