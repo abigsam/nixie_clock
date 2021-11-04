@@ -59,7 +59,8 @@
 #define HT_0                (REG1 + 1u)
 
 //
-#define RTC_INTERRUPT_PIN   2
+#define RTC_INTERRUPT_PIN       2
+#define SHIFT_REG_LOAD_PIN      (8)
 
 
 #endif //__NIXIE_CLOCK_DEFINES_H
