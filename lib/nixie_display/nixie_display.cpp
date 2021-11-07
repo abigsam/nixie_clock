@@ -5,10 +5,7 @@
 #define BEGIN_TRANSACTION()     do {SPI.beginTransaction(SPISettings(SPI_CLOCK_HZ, MSBFIRST, SPI_MODE0));} while(0);
 #define GET_REG_NUM(n)          ((n) / 8u)
 #define GET_REG_MASK(n)         ((uint8_t)(1u << ((n) % 8u)))
-#define MINUTES_ONES_DIGIT      (0u)
-#define MINUTES_TENS_DIGIT      (1u)
-#define HOURS_ONES_DIGIT        (2u)
-#define HOURS_TENS_DIGIT        (3u)
+
 
 
 const PROGMEM uint8_t MINUTES_ONES_SET[] = {
@@ -161,31 +158,6 @@ uint8_t* nixie_display::set_display_buffer(uint8_t digit_num, char value)
 }
 
 
-/**
- * @brief Decode DateTime class value and update display buffer
- * 
- * @param time  DateTime class with time value
- */
-void nixie_display::decode_time(DateTime *time)
-{
-    uint8_t ones = 0u, tens = 0u;
-    //Clear buffer
-    // memset(arr, (uint8_t)0u, REGISTERS_NUM);
-    //Minutes
-    ones = time->minute() % 10u;
-    tens = time->minute() / 10u;
-    set_display_buffer(MINUTES_ONES_DIGIT, (char)('0' + ones));
-    set_display_buffer(MINUTES_TENS_DIGIT, (char)('0' + tens));
-    //Hours
-    ones = time->hour() % 10u;
-    tens = time->hour() / 10u;
-    set_display_buffer(HOURS_ONES_DIGIT, (char)('0' + ones));
-    if (0u == tens && (uint8_t)HIDE_HOUR_TENS_IF_ZERO > 0u)
-        set_display_buffer(HOURS_TENS_DIGIT, ' ');
-    else
-        set_display_buffer(HOURS_TENS_DIGIT, (char)('0' + tens));
-}
-
 
 /**
  * @brief Control decimal points and update display buffer
@@ -231,19 +203,6 @@ void nixie_display::clear()
 }
 
 /**
- * @brief Display time
- * 
- * @param curr_time     Time value that need to be displayed
- * @param point_mask    Decimap points mask; can be one/ORed value POINT_OFF, POINT_MINUTE_TENS, POINT_HOUR_ONES, POINT_DONT_CHANGE
- */
-void nixie_display::display(DateTime *curr_time, uint8_t point_mask)
-{
-    decode_time(curr_time);
-    set_decimal_points((decimal_pnt_t)point_mask);
-    write_display(arr, REGISTERS_NUM);
-}
-
-/**
  * @brief Set char to display. Updates only display beffer
  * 
  * @param val           Char to display; can be in range '0'...'9' or ' ' for clear sigit
@@ -259,7 +218,7 @@ void nixie_display::set_char(uint8_t digit_num, char val)
  * 
  * @param point_mask    Decimap points mask; can be one/ORed value POINT_OFF, POINT_MINUTE_TENS, POINT_HOUR_ONES, POINT_DONT_CHANGE
  */
-void nixie_display::set_point(decimal_pnt_t point_mask)
+void nixie_display::set_point(uint8_t point_mask)
 {
     set_decimal_points((decimal_pnt_t)point_mask);
 }
