@@ -15,9 +15,7 @@ void bsp_display_time(DateTime *curr_time);
 void bsp_display_clear();
 void bsp_get_current_time(DateTime *current_time);
 
-//Privat functiones
-static void decode_time(DateTime *time);
-static void rtc_init();
+
 
 
 #endif //__NIXIE_CLOCK_BSP_H

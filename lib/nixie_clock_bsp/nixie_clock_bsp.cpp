@@ -1,8 +1,13 @@
 #include "nixie_clock_bsp.h"
+#include "../../include/nixie_clock_defines.h"
 
 
 nixie_display ndisplay;
 RTC_DS3231 rtc;
+
+//Privat functiones
+static void decode_time(DateTime *time);
+static void rtc_init();
 
 
 /**
@@ -13,6 +18,14 @@ void bsp_init()
 {
     ndisplay.clear();
     rtc_init();
+    //Init pins
+    pinMode(RTC_INTERRUPT_PIN, INPUT_PULLUP);
+    pinMode(BOARD_LED_PIN, OUTPUT);
+    pinMode(EN_GPS_PIN, OUTPUT);
+    pinMode(BTN_MINUS_PIN, INPUT);
+    pinMode(BTN_PLUS_PIN, INPUT);
+    pinMode(BTN_MODE_PIN, INPUT);
+
 }
 
 /**
