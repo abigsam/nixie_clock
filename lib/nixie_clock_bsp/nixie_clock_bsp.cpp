@@ -5,9 +5,17 @@
 nixie_display ndisplay;
 RTC_DS3231 rtc;
 
+typedef enum {
+    SET_BCD_MINUTES = 0u,
+    SET_BCD_HOURS
+} display_bcd_t;
+
+
 //Privat functiones
 static void decode_time(DateTime *time);
 static void rtc_init();
+static void display_bcd(display_bcd_t dspl, uint8_t value);
+static void display_bcd_clr(display_bcd_t dspl);
 
 
 /**
@@ -102,6 +110,41 @@ static void rtc_init()
 }
 
 /**
+ * @brief 
+ * 
+ * @param dspl 
+ * @param value 
+ */
+static void display_bcd(display_bcd_t dspl, uint8_t value)
+{
+    if (SET_BCD_MINUTES == dspl) {
+        ndisplay.set_char(0u, (char)('0' + value%10u));
+        ndisplay.set_char(1u, (char)('0' + value/10u));
+    } else if (SET_BCD_HOURS == dspl) {
+        ndisplay.set_char(2u, (char)('0' + value%10u));
+        ndisplay.set_char(3u, (char)('0' + value/10u));
+    }
+    ndisplay.display_update();
+}
+
+/**
+ * @brief 
+ * 
+ * @param dspl 
+ */
+static void display_bcd_clr(display_bcd_t dspl)
+{
+    if (SET_BCD_MINUTES == dspl) {
+        ndisplay.set_char(0u, (char)(' '));
+        ndisplay.set_char(1u, (char)(' '));
+    } else if (SET_BCD_HOURS == dspl) {
+        ndisplay.set_char(2u, (char)(' '));
+        ndisplay.set_char(3u, (char)(' '));
+    }
+    ndisplay.display_update();
+}
+
+/**
  * @brief Display time
  * 
  * @param curr_time     Time to display
@@ -126,9 +169,19 @@ void bsp_display_clear()
  * 
  * @param current_time  Pointer where current time value should be stored
  */
-void bsp_get_current_time(DateTime *current_time)
+void bsp_get_current_time(DateTime &current_time)
 {
-    *current_time = rtc.now();
+    current_time = rtc.now();
+}
+
+/**
+ * @brief Write to RTC new value
+ * 
+ * @param current_time  Pointer where current time value should be stored
+ */
+void bsp_set_new_time(const DateTime &current_time)
+{
+    rtc.adjust(current_time);
 }
 
 void bsp_led(bool en)
@@ -144,4 +197,90 @@ void bsp_gps_power(bool en)
 bool bsp_read_btn(bsp_btn_t btn)
 {
     return (digitalRead((uint8_t)btn) == 0 ? true : false);
+}
+
+
+bool bsp_mode_set(DateTime &current_time)
+{
+    bool active_loop = true, time_changed = false, digit_en = true;
+    uint8_t state = 0u, time_cnt = 0u, mode_time_cnt = 0u, blink_cnt = 0u;
+    uint8_t minutes = 0u, hours = 0u;
+    minutes = current_time.minute();
+    hours = current_time.hour();
+    // DateTime new_time(current_time);
+    do {
+        if (bsp_read_btn(BTN_PLUS) || bsp_read_btn(BTN_MINUS)) {
+            time_changed = true;
+            time_cnt = 0u;
+            mode_time_cnt = 0u;
+        }
+        
+        blink_cnt++;
+        if (blink_cnt > DIGIT_BLINK_100MS) {
+            blink_cnt = 0u;
+            digit_en = ~digit_en;
+        }
+
+        if (0u == state) {
+            //*************************************************************************************
+            if (bsp_read_btn(BTN_PLUS)) {
+                if (59u == minutes)
+                    minutes = 0u;
+                else
+                    minutes++;
+            } else if (bsp_read_btn(BTN_MINUS)) {
+                if (0u == minutes)
+                    minutes = 59u;
+                else
+                    minutes--;
+            } else if (bsp_read_btn(BTN_MODE)) {
+                mode_time_cnt++;
+            }
+            if (mode_time_cnt > SWITCH_MODE_100MS) {
+                state = 1u;
+                mode_time_cnt = 0u;
+            }
+            if (digit_en)
+                display_bcd(SET_BCD_MINUTES, minutes);
+            else
+                display_bcd_clr(SET_BCD_MINUTES);
+        } else if (1u == state) {
+            //*************************************************************************************
+            if (bsp_read_btn(BTN_PLUS)) {
+                if (23u == hours)
+                    hours = 0u;
+                else
+                    hours++;
+            } else if (bsp_read_btn(BTN_MINUS)) {
+                if (0u == hours)
+                    hours = 23u;
+                else
+                    hours--;
+            } else if (bsp_read_btn(BTN_MODE)) {
+                mode_time_cnt++;
+            }
+            if (mode_time_cnt > SWITCH_MODE_100MS) {
+                state = 2u;
+                mode_time_cnt = 0u;
+            }
+            if (digit_en)
+                display_bcd(SET_BCD_HOURS, hours);
+            else
+                display_bcd_clr(SET_BCD_HOURS);
+        } else if (2u == state) {
+            //*************************************************************************************
+            active_loop = false;
+        }
+        delay(100u);
+        time_cnt++;
+        if (time_cnt > EXIT_FROM_MODE_100MS) {
+            active_loop = false;
+        }
+    } while(active_loop);
+
+    if (time_changed) {
+        current_time = DateTime(current_time.year(), current_time.month(), current_time.day(), hours, minutes, 0u);
+    }
+
+    return time_changed;
 }
