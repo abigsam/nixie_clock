@@ -25,7 +25,9 @@ void bsp_init()
     pinMode(BTN_MINUS_PIN, INPUT);
     pinMode(BTN_PLUS_PIN, INPUT);
     pinMode(BTN_MODE_PIN, INPUT);
-
+    //Default state
+    bsp_led(false);
+    bsp_gps_power(false);
 }
 
 /**
@@ -127,4 +129,19 @@ void bsp_display_clear()
 void bsp_get_current_time(DateTime *current_time)
 {
     *current_time = rtc.now();
+}
+
+void bsp_led(bool en)
+{
+    digitalWrite(BOARD_LED_PIN, (en ? HIGH : LOW));
+}
+
+void bsp_gps_power(bool en)
+{
+    digitalWrite(EN_GPS_PIN, (en ? HIGH : LOW));
+}
+
+bool bsp_read_btn(bsp_btn_t btn)
+{
+    return (digitalRead((uint8_t)btn) == 0 ? true : false);
 }
