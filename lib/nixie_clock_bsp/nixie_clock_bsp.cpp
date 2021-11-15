@@ -26,13 +26,16 @@ void bsp_init()
 {
     ndisplay.clear();
     rtc_init();
-    //Init pins
+    //Init pins: inputs
     pinMode(RTC_INTERRUPT_PIN, INPUT_PULLUP);
-    pinMode(BOARD_LED_PIN, OUTPUT);
-    pinMode(EN_GPS_PIN, OUTPUT);
     pinMode(BTN_MINUS_PIN, INPUT);
     pinMode(BTN_PLUS_PIN, INPUT);
     pinMode(BTN_MODE_PIN, INPUT);
+    //Init pins: outputs
+    digitalWrite(BOARD_LED_PIN, LOW);
+    pinMode(BOARD_LED_PIN, OUTPUT);
+    digitalWrite(EN_GPS_PIN, LOW);
+    pinMode(EN_GPS_PIN, OUTPUT);
     //Default state
     bsp_led(false);
     bsp_gps_power(false);

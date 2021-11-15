@@ -73,8 +73,8 @@ nixie_display::nixie_display(/* args */)
 {
     SPI.begin();
     memset(arr, (uint8_t)0u, REGISTERS_NUM);
-    pinMode(SHIFT_REG_LOAD_PIN, OUTPUT);
     digitalWrite(SHIFT_REG_LOAD_PIN, LOW);
+    pinMode(SHIFT_REG_LOAD_PIN, OUTPUT);
 }
 
 /**
