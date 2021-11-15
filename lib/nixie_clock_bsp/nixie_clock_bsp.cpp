@@ -47,6 +47,7 @@ void bsp_init()
  */
 void bsp_check_display()
 {
+    bsp_led(true);
     ndisplay.clear();
     ndisplay.set_point((POINT_MINUTE_TENS | POINT_MINUTE_TENS));
     for (auto i = 0u; i < 10u; i++) {
@@ -56,6 +57,7 @@ void bsp_check_display()
         delay(600u);
     }
     ndisplay.clear();
+    bsp_led(false);
 }
 
 /**
