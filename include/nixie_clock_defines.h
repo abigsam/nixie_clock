@@ -61,8 +61,8 @@
 #define RTC_INTERRUPT_PIN       (2)
 #define SHIFT_REG_LOAD_PIN      (8)
 //
-#define BOARD_LED_PIN           (A7)
-#define EN_GPS_PIN              (A6)
+#define BOARD_LED_PIN           (A2)
+#define EN_GPS_PIN              (A1)
 #define BTN_MINUS_PIN           (5)
 #define BTN_PLUS_PIN            (6)
 #define BTN_MODE_PIN            (3)
