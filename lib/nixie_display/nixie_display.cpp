@@ -3,7 +3,7 @@
 
 #define UPD_DELAY_MS            (10u)
 #define BEGIN_TRANSACTION()     do {SPI.beginTransaction(SPISettings(SPI_CLOCK_HZ, MSBFIRST, SPI_MODE0));} while(0);
-#define GET_REG_NUM(n)          ((n) / 8u)
+#define GET_REG_NUM(n)          (REGISTERS_NUM - 1u - ((n) / 8u))
 #define GET_REG_MASK(n)         ((uint8_t)(1u << ((n) % 8u)))
 
 
@@ -72,7 +72,7 @@ const PROGMEM uint8_t HOURS_TENS_SET[] = {
 nixie_display::nixie_display(/* args */)
 {
     SPI.begin();
-    memset(arr, (uint8_t)0u, REGISTERS_NUM);
+    clr_buffer();
     digitalWrite(SHIFT_REG_LOAD_PIN, LOW);
     pinMode(SHIFT_REG_LOAD_PIN, OUTPUT);
 }
@@ -188,6 +188,12 @@ void nixie_display::set_decimal_points(decimal_pnt_t point_mask)
     }
 }
 
+
+void nixie_display::clr_buffer()
+{
+    memset(arr, (uint8_t)0u, REGISTERS_NUM);
+}
+
 /**
  * @brief Clear external shift register. Display buffer will not cleared
  * 
@@ -200,6 +206,7 @@ void nixie_display::clear()
     }
     SPI.endTransaction();
     update_shift_reg();
+    clr_buffer();
 }
 
 /**
