@@ -223,7 +223,7 @@ bool bsp_mode_set(DateTime &current_time)
         blink_cnt++;
         if (blink_cnt > DIGIT_BLINK_100MS) {
             blink_cnt = 0u;
-            digit_en = ~digit_en;
+            digit_en = !digit_en;
         }
 
         if (0u == state) {
