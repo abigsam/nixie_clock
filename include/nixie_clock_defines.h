@@ -20,8 +20,8 @@
 #define MO_6                    (REG5 + 3u)
 #define MO_7                    (REG5 + 4u)
 #define MO_8                    (REG5 + 5u)
-#define MO_9                    (REG5 + 6u)
-#define MO_0                    (REG5 + 7u)
+#define MO_9                    (REG5 + 7u)
+#define MO_0                    (REG5 + 6u)
 //Minutes: tens
 #define MT_1                    (REG3 + 6u)
 #define MT_2                    (REG3 + 7u)
