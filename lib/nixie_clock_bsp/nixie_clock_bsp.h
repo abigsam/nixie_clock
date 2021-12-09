@@ -28,5 +28,7 @@ void bsp_gps_power(bool en);
 bool bsp_read_btn(bsp_btn_t btn);
 //
 bool bsp_mode_set(DateTime &current_time);
+//
+void bsp_point(bool enable);
 
 #endif //__NIXIE_CLOCK_BSP_H

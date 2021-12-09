@@ -49,7 +49,7 @@ void bsp_check_display()
 {
     bsp_led(true);
     ndisplay.clear();
-    ndisplay.set_point((POINT_MINUTE_TENS | POINT_MINUTE_TENS));
+    ndisplay.set_decimal_points(POINT_MINUTE_TENS);
     for (auto i = 0u; i < 10u; i++) {
         for (auto n = 0u; n < 4u; n++)
             ndisplay.set_char(n, (char)('0' + i));
@@ -288,4 +288,16 @@ bool bsp_mode_set(DateTime &current_time)
     }
 
     return time_changed;
+}
+
+
+/**
+ * @brief Control display point
+ * 
+ * @param enable    True for enable, False for disable
+ */
+void bsp_point(bool enable)
+{
+    ndisplay.set_decimal_points((enable) ? POINT_MINUTE_TENS : POINT_OFF);
+    ndisplay.display_update();
 }

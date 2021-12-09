@@ -221,16 +221,6 @@ void nixie_display::set_char(uint8_t digit_num, char val)
 }
 
 /**
- * @brief Control decimal points and update display buffer
- * 
- * @param point_mask    Decimap points mask; can be one/ORed value POINT_OFF, POINT_MINUTE_TENS, POINT_HOUR_ONES, POINT_DONT_CHANGE
- */
-void nixie_display::set_point(uint8_t point_mask)
-{
-    set_decimal_points((decimal_pnt_t)point_mask);
-}
-
-/**
  * @brief Write buffer to the external shift register
  * 
  */

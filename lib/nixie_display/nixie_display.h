@@ -28,15 +28,13 @@ private:
     uint8_t* clr_display_buffer(uint8_t digit_num);
     uint8_t* set_display_buffer(uint8_t digit_num, char value);
     //
-    void set_decimal_points(decimal_pnt_t point_mask);
-    //
     void clr_buffer();
 public:
     nixie_display(/* args */);
     void clear();
     //Write any digit
     void set_char(uint8_t digit_num, char val);
-    void set_point(uint8_t point_mask);
+    void set_decimal_points(decimal_pnt_t point_mask);
     void display_update();
     
 private:
