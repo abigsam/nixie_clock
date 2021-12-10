@@ -49,10 +49,11 @@ void bsp_check_display()
 {
     bsp_led(true);
     ndisplay.clear();
-    ndisplay.set_decimal_points(POINT_MINUTE_TENS);
+    // ndisplay.set_decimal_points(POINT_MINUTE_TENS);
     for (auto i = 0u; i < 10u; i++) {
         for (auto n = 0u; n < 4u; n++)
             ndisplay.set_char(n, (char)('0' + i));
+        ndisplay.set_decimal_points(POINT_MINUTE_TENS, true);
         ndisplay.display_update();
         delay(600u);
     }
@@ -298,6 +299,6 @@ bool bsp_mode_set(DateTime &current_time)
  */
 void bsp_point(bool enable)
 {
-    ndisplay.set_decimal_points((enable) ? POINT_MINUTE_TENS : POINT_OFF);
+    ndisplay.set_decimal_points(POINT_MINUTE_TENS, enable);
     ndisplay.display_update();
 }

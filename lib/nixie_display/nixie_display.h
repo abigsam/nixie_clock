@@ -12,10 +12,9 @@
 #define HOURS_TENS_DIGIT            (3u)
 
 typedef enum {
-    POINT_OFF         = 0u,
-    POINT_MINUTE_TENS = (1u << 0),
-    POINT_HOUR_ONES   = (1u << 1),
-    POINT_DONT_CHANGE = (1u << 2)
+    POINT_MINUTE_TENS = 0u,
+    POINT_HOUR_ONES,
+    POINT_ALL
 } decimal_pnt_t;
 
 class nixie_display
@@ -34,7 +33,7 @@ public:
     void clear();
     //Write any digit
     void set_char(uint8_t digit_num, char val);
-    void set_decimal_points(decimal_pnt_t point_mask);
+    void set_decimal_points(decimal_pnt_t displ_point, bool state);
     void display_update();
     
 private:

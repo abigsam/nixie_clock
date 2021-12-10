@@ -77,6 +77,7 @@ nixie_display::nixie_display(/* args */)
     pinMode(SHIFT_REG_LOAD_PIN, OUTPUT);
 }
 
+
 /**
  * @brief Send update strobe to the external shift register
  * 
@@ -87,6 +88,7 @@ void nixie_display::update_shift_reg()
     delay(UPD_DELAY_MS);
     digitalWrite(SHIFT_REG_LOAD_PIN, LOW);
 }
+
 
 /**
  * @brief Write display buffer to the external shift register
@@ -101,6 +103,7 @@ void nixie_display::write_display(uint8_t *ptr, uint8_t size)
     SPI.endTransaction();
     update_shift_reg();
 }
+
 
 /**
  * @brief Get convert table pointer in FLASH for specified display digit number
@@ -120,6 +123,7 @@ uint8_t* nixie_display::get_table_ptr(uint8_t display_digit)
         return (uint8_t *)MINUTES_ONES_SET;
 }
 
+
 /**
  * @brief Clear display digit
  * 
@@ -137,6 +141,7 @@ uint8_t* nixie_display::clr_display_buffer(uint8_t digit_num)
     }
     return ptr;
 }
+
 
 /**
  * @brief Set display buffer with specified number
@@ -158,41 +163,47 @@ uint8_t* nixie_display::set_display_buffer(uint8_t digit_num, char value)
 }
 
 
-
 /**
  * @brief Control decimal points and update display buffer
  * 
- * @param point_mask    Decimap points mask; can be one/ORed value POINT_OFF, POINT_MINUTE_TENS, POINT_HOUR_ONES, POINT_DONT_CHANGE
+ * @param displ_point    Decimap points mask: POINT_MINUTE_TENS, POINT_HOUR_ONES, POINT_ALL
+ * @param state         Enable or disable state
  */
-void nixie_display::set_decimal_points(decimal_pnt_t point_mask)
+void nixie_display::set_decimal_points(decimal_pnt_t displ_point, bool state)
 {
     uint8_t reg_num = 0u, mask = 0u;
 
-    if (POINT_DONT_CHANGE & point_mask)
-        return; // Do nothing
-    
-    reg_num = GET_REG_NUM(MT_POINT);
-    mask = GET_REG_MASK(MT_POINT);
-    if (POINT_MINUTE_TENS & point_mask) {
-        arr[reg_num] |= mask;
-    } else {
-        arr[reg_num] &= ~mask;
+    if (POINT_MINUTE_TENS == displ_point || POINT_ALL == displ_point) {
+        reg_num = GET_REG_NUM(MT_POINT);
+        mask = GET_REG_MASK(MT_POINT);
+        if (state) {
+            arr[reg_num] |= mask;
+        } else {
+            arr[reg_num] &= ~mask;
+        }
     }
-    
-    reg_num = GET_REG_NUM(HO_POINT);
-    mask = GET_REG_MASK(HO_POINT);
-    if (POINT_HOUR_ONES & point_mask) {
-       arr[reg_num] |= mask;
-    } else {
-        arr[reg_num] &= ~mask;
+
+    if (POINT_HOUR_ONES == displ_point || POINT_ALL == displ_point) {
+        reg_num = GET_REG_NUM(HO_POINT);
+        mask = GET_REG_MASK(HO_POINT);
+        if (state) {
+            arr[reg_num] |= mask;
+        } else {
+            arr[reg_num] &= ~mask;
+        }
     }
 }
 
 
+/**
+ * @brief Clear internal buffer
+ * 
+ */
 void nixie_display::clr_buffer()
 {
     memset(arr, (uint8_t)0u, REGISTERS_NUM);
 }
+
 
 /**
  * @brief Clear external shift register. Display buffer will not cleared
@@ -209,6 +220,7 @@ void nixie_display::clear()
     clr_buffer();
 }
 
+
 /**
  * @brief Set char to display. Updates only display beffer
  * 
@@ -219,6 +231,7 @@ void nixie_display::set_char(uint8_t digit_num, char val)
 {   
     set_display_buffer(digit_num, val);
 }
+
 
 /**
  * @brief Write buffer to the external shift register
