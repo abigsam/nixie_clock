@@ -49,7 +49,6 @@ void bsp_check_display()
 {
     bsp_led(true);
     ndisplay.clear();
-    // ndisplay.set_decimal_points(POINT_MINUTE_TENS);
     for (auto i = 0u; i < 10u; i++) {
         for (auto n = 0u; n < 4u; n++)
             ndisplay.set_char(n, (char)('0' + i));
@@ -83,6 +82,24 @@ static void decode_time(DateTime *time)
     else
         ndisplay.set_char(HOURS_TENS_DIGIT, (char)('0' + tens));
 }
+
+
+/**
+ * @brief 
+ * 
+ * @param value 
+ */
+static void decode_digit(uint16_t value)
+{
+    ndisplay.set_char(MINUTES_ONES_DIGIT,  (char)('0' + value%10u) );
+    value /= 10u;
+    ndisplay.set_char(MINUTES_TENS_DIGIT,  (char)('0' + value%10u) );
+    value /= 10u;
+    ndisplay.set_char(HOURS_ONES_DIGIT, (char)('0' + value%10u) );
+    value /= 10u;
+    ndisplay.set_char(HOURS_TENS_DIGIT, (char)('0' + value%10u) );
+}
+
 
 /**
  * @brief Initilize external RTC
@@ -160,6 +177,18 @@ void bsp_display_time(DateTime *curr_time)
     decode_time(curr_time);
     ndisplay.display_update();
 }
+
+/**
+ * @brief Display "raw" digit in the range 0...9999
+ * 
+ * @param value     Digit value in the range 0...9999
+ */
+void bsp_display_digit(uint16_t value)
+{
+    decode_digit(value);
+    ndisplay.display_update();
+}
+
 
 /**
  * @brief Clear display

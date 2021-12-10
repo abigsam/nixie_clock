@@ -20,6 +20,7 @@ typedef enum {
 void bsp_init();
 void bsp_check_display();
 void bsp_display_time(DateTime *curr_time);
+void bsp_display_digit(uint16_t value);
 void bsp_display_clear();
 void bsp_get_current_time(DateTime &current_time);
 void bsp_set_new_time(const DateTime &current_time);
