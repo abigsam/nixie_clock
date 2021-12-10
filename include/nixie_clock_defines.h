@@ -57,15 +57,17 @@
 #define HT_8                    (REG1 + 3u)
 #define HT_9                    (REG1 + 2u)
 #define HT_0                    (REG1 + 1u)
-//
+//Board periphery
 #define RTC_INTERRUPT_PIN       (2)
 #define SHIFT_REG_LOAD_PIN      (8)
-//
 #define BOARD_LED_PIN           (A2)
-#define EN_GPS_PIN              (A1)
 #define BTN_MINUS_PIN           (5)
 #define BTN_PLUS_PIN            (6)
 #define BTN_MODE_PIN            (3)
+//GPS
+#define EN_GPS_PIN              (A1)
+#define GPS_TX                  (7)
+#define GPS_RX                  (4)
 
 
 #endif //__NIXIE_CLOCK_DEFINES_H
