@@ -21,13 +21,13 @@ class nixie_display
 {
 private:
     void update_shift_reg();
-    void write_display(uint8_t *ptr, uint8_t size);
     //
     uint8_t* get_table_ptr(uint8_t display_digit);
     uint8_t* clr_display_buffer(uint8_t digit_num);
     uint8_t* set_display_buffer(uint8_t digit_num, char value);
     //
     void clr_buffer();
+    void clr_shift_reg();
 public:
     nixie_display(/* args */);
     void clear();

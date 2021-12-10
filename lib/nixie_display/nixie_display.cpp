@@ -1,7 +1,7 @@
 #include "nixie_display.h"
 #include <avr/pgmspace.h>
 
-#define UPD_DELAY_MS            (10u)
+#define UPD_DELAY_MS            (1u)
 #define BEGIN_TRANSACTION()     do {SPI.beginTransaction(SPISettings(SPI_CLOCK_HZ, MSBFIRST, SPI_MODE0));} while(0);
 #define GET_REG_NUM(n)          (REGISTERS_NUM - 1u - ((n) / 8u))
 #define GET_REG_MASK(n)         ((uint8_t)(1u << ((n) % 8u)))
@@ -87,21 +87,6 @@ void nixie_display::update_shift_reg()
     digitalWrite(SHIFT_REG_LOAD_PIN, HIGH);
     delay(UPD_DELAY_MS);
     digitalWrite(SHIFT_REG_LOAD_PIN, LOW);
-}
-
-
-/**
- * @brief Write display buffer to the external shift register
- * 
- * @param ptr   Pointer to the buffer
- * @param size  Number of digits
- */
-void nixie_display::write_display(uint8_t *ptr, uint8_t size)
-{
-    SPI.beginTransaction(SPISettings(SPI_CLOCK_HZ, MSBFIRST, SPI_MODE0));
-    SPI.transfer(ptr, size);
-    SPI.endTransaction();
-    update_shift_reg();
 }
 
 
@@ -206,18 +191,30 @@ void nixie_display::clr_buffer()
 
 
 /**
- * @brief Clear external shift register. Display buffer will not cleared
+ * @brief Clear shift register
  * 
  */
-void nixie_display::clear()
+void nixie_display::clr_shift_reg()
 {
     BEGIN_TRANSACTION();
     for(auto i = 0u; i < REGISTERS_NUM; i++) {
         SPI.transfer(0u);
     }
     SPI.endTransaction();
-    update_shift_reg();
+    // delay(1);
+    // update_shift_reg();
+}
+
+
+/**
+ * @brief Clear external shift register. Display buffer will not cleared
+ * 
+ */
+void nixie_display::clear()
+{
     clr_buffer();
+    clr_shift_reg();
+    update_shift_reg();
 }
 
 
@@ -239,5 +236,10 @@ void nixie_display::set_char(uint8_t digit_num, char val)
  */
 void nixie_display::display_update()
 {
-    write_display(arr, REGISTERS_NUM);
+    BEGIN_TRANSACTION();
+    for(auto i = 0u; i < REGISTERS_NUM; i++) {
+        SPI.transfer(*(arr + i));
+    }
+    SPI.endTransaction();
+    update_shift_reg();
 }
