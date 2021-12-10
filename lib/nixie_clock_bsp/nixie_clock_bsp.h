@@ -27,9 +27,8 @@ void bsp_set_new_time(const DateTime &current_time);
 void bsp_led(bool en);
 void bsp_gps_power(bool en);
 bool bsp_read_btn(bsp_btn_t btn);
-//
 bool bsp_mode_set(DateTime &current_time);
-//
 void bsp_point(bool enable);
+void bsp_clr_rtc_alarms();
 
 #endif //__NIXIE_CLOCK_BSP_H

@@ -121,8 +121,9 @@ static void rtc_init()
 
     // set alarm 1, 2 flag to false (so alarm 1, 2 didn't happen so far)
     // if not done, this easily leads to problems, as both register aren't reset on reboot/recompile
-    rtc.clearAlarm(1);
-    rtc.clearAlarm(2);
+    // rtc.clearAlarm(1);
+    // rtc.clearAlarm(2);
+    bsp_clr_rtc_alarms();
     // stop oscillating signals at SQW Pin
     // otherwise setAlarm1 will fail
     rtc.writeSqwPinMode(DS3231_OFF);
@@ -330,4 +331,15 @@ void bsp_point(bool enable)
 {
     ndisplay.set_decimal_points(POINT_MINUTE_TENS, enable);
     ndisplay.display_update();
+}
+
+
+/**
+ * @brief Clear RTC alarms
+ * 
+ */
+void bsp_clr_rtc_alarms()
+{
+    rtc.clearAlarm(1);
+    rtc.clearAlarm(2);
 }
