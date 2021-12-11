@@ -1,9 +1,11 @@
 #include "nixie_clock_bsp.h"
 #include "../../include/nixie_clock_defines.h"
+#include "gps_time.h"
 
-
+//Create private objects **************************************************************************
 nixie_display ndisplay;
 RTC_DS3231 rtc;
+gps_time gpst(GPS_RX, GPS_TX);
 
 typedef enum {
     SET_BCD_MINUTES = 0u,
@@ -11,7 +13,7 @@ typedef enum {
 } display_bcd_t;
 
 
-//Privat functiones
+//Privat functions ********************************************************************************
 static void decode_time(DateTime *time);
 static void rtc_init();
 static void display_bcd(display_bcd_t dspl, uint8_t value);
@@ -38,7 +40,10 @@ void bsp_init()
     pinMode(EN_GPS_PIN, OUTPUT);
     //Default state
     bsp_led(false);
-    bsp_gps_power(false);
+    bsp_gps_power(true);
+    //GPS
+    delay(200);
+    gpst.begin();
 }
 
 /**
@@ -342,4 +347,33 @@ void bsp_clr_rtc_alarms()
 {
     rtc.clearAlarm(1);
     rtc.clearAlarm(2);
+}
+
+
+/**
+ * @brief Check if GPS has valid date/time date
+ * 
+ * @return true     If GPS has valid date/time
+ * @return false    If GPS does not have valid date/time
+ */
+bool bsp_gps_check_ready()
+{
+    gpst.read_gps();
+    return (gpst.time_valid());
+}
+
+
+/**
+ * @brief Return GPS date/time as DataTime object
+ * 
+ * @return DateTime     GPS date and time
+ */
+DateTime bsp_gps_get_time()
+{
+    return DateTime(gpst.get_year(),
+                    gpst.get_month(),
+                    gpst.get_day(),
+                    gpst.get_hour(),
+                    gpst.get_minute(),
+                    gpst.get_second());
 }
