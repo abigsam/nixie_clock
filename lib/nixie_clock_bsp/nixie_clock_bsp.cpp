@@ -34,7 +34,7 @@ void bsp_init()
     //Init pins: outputs
     digitalWrite(BOARD_LED_PIN, LOW);
     pinMode(BOARD_LED_PIN, OUTPUT);
-    digitalWrite(EN_GPS_PIN, LOW);
+    // digitalWrite(EN_GPS_PIN, LOW);
     pinMode(EN_GPS_PIN, OUTPUT);
     //Default state
     bsp_led(false);

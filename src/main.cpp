@@ -1,10 +1,13 @@
 #include <Arduino.h>
 #include "nixie_clock_bsp.h"
 #include <arduino-timer.h>
+#include "gps_time.h"
 
 #define ENTER_MODE          (20u)
 
 DateTime curr_time;
+gps_time gpst;
+
 auto timer = timer_create_default(); // create a timer with default settings
 
 uint8_t update_time = 0u, update_decimal = 0u;
@@ -25,6 +28,8 @@ void setup () {
     bsp_led(false);
     //Blink decimal every 500 mS
     timer.every(500, blinkDecimal);
+    Serial.begin(9600);
+    gpst.begin();
 }
 
 void loop () {
@@ -44,6 +49,8 @@ void loop () {
     }
 
     timer.tick(); // tick the timer
+
+    gpst.test();
 
     // if (bsp_read_btn(BTN_MODE)) {
     //     cnt_mode++;
