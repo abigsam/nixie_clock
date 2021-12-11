@@ -6,7 +6,7 @@
 #define ENTER_MODE          (20u)
 
 DateTime curr_time;
-gps_time gpst;
+gps_time gpst(GPS_RX, GPS_TX);
 
 auto timer = timer_create_default(); // create a timer with default settings
 

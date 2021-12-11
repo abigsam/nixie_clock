@@ -15,11 +15,10 @@ private: /* data */
 private: /* methods */
     void display_info();
 public:
-    gps_time(/* args */);
+    gps_time(uint8_t rx, uint8_t tx);
     void begin();
     void test();
     //
-    void power(bool state);
     void read_gps();
     bool location_valid();
     bool time_valid();

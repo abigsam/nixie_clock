@@ -1,21 +1,13 @@
 #include "gps_time.h"
 
-#include "../../include/nixie_clock_defines.h"
-
-// The TinyGPS++ object
-// TinyGPSPlus gps;
-
-// The serial connection to the GPS device
-// SoftwareSerial sserial(GPS_RX, GPS_TX);
-
 /**
  * @brief gps_time class constructor
  * 
  */
-gps_time::gps_time(/* args */)
+gps_time::gps_time(uint8_t rx, uint8_t tx)
 {
     _gps = new TinyGPSPlus;
-    _sserial = new SoftwareSerial(GPS_RX, GPS_TX);
+    _sserial = new SoftwareSerial(rx, tx);
 }
 
 
@@ -81,10 +73,6 @@ void gps_time::display_info()
  */
 void gps_time::begin()
 {
-    power(false);
-    pinMode(EN_GPS_PIN, OUTPUT);
-    power(true);
-    delay(400);
     _sserial->begin(GPS_UART_SPEED);
 }
 
@@ -99,17 +87,6 @@ void gps_time::test()
     if (_gps->encode(_sserial->read())) {
         display_info();
     }
-}
-
-
-/**
- * @brief Control GPS power
- * 
- * @param state     True for enable, False for disabling power
- */
-void gps_time::power(bool state)
-{
-    digitalWrite(EN_GPS_PIN, (state) ? HIGH : LOW);
 }
 
 
