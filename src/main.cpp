@@ -5,33 +5,36 @@
 
 #define ENTER_MODE          (20u)
 
+//Create objects
 DateTime curr_time;
 gps_time gpst(GPS_RX, GPS_TX);
-
 auto timer = timer_create_default(); // create a timer with default settings
 
+//Global variables
 uint8_t update_time = 0u, update_decimal = 0u;
 uint16_t cnt_mode = 0u;
 bool decimal_state = false;
 
+//Functions defines
 void onAlarm();
 bool blinkDecimal(void *);
 
+//Startup setup ***********************************************************************************
 void setup () {
-    bsp_init();
+    bsp_init(); //Init all
     bsp_led(true);
-    // bsp_check_display();
     // Making it so, that the alarm will trigger an interrupt
     attachInterrupt(digitalPinToInterrupt(RTC_INTERRUPT_PIN), onAlarm, FALLING);
     update_time = 1u;
-    // delay(200);
-    bsp_led(false);
     //Blink decimal every 500 mS
     timer.every(500, blinkDecimal);
+    //For GPS
     Serial.begin(9600);
     gpst.begin();
+    bsp_led(false);
 }
 
+//Main loop ***************************************************************************************
 void loop () {
 
     if (update_time > 0u)
@@ -69,7 +72,6 @@ void loop () {
 
 /**
  * @brief RTC alarm interrupt
- * 
  */
 void onAlarm()
 {
@@ -80,7 +82,6 @@ void onAlarm()
 
 /**
  * @brief Timer for decimal blinking
- * 
  */
 bool blinkDecimal(void *)
 {
