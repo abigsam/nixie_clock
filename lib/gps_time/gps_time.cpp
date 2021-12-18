@@ -91,14 +91,23 @@ void gps_time::test()
 
 
 /**
- * @brief 
+ * @brief Read GPS serial port untill poll time is ended or correct char is received
  * 
+ * @param poll_time     Poll time in CPU clocks
+ * @return true         Received correct start GPS message
+ * @return false        Poll time is ended and no correct GPS message was received
  */
-void gps_time::read_gps()
+bool gps_time::read_gps(uint16_t poll_time)
 {
-    if (_sserial->available() > 0) {
-        _gps->encode(_sserial->read());
-    }
+    do {
+        if (_sserial->available() > 0) {
+            if (_gps->encode(_sserial->read())) {
+                return true;
+            }
+        }
+        poll_time--;
+    } while (poll_time);
+    return false;
 }
 
 
@@ -123,6 +132,7 @@ bool gps_time::location_valid()
 bool gps_time::time_valid()
 {
     return (_gps->date.isValid() && _gps->time.isValid());
+    // return (_gps->time.isValid());
 }
 
 

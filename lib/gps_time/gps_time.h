@@ -5,21 +5,21 @@
 #include <SoftwareSerial.h>
 
 #define GPS_UART_SPEED          ((uint32_t) 9600)
-
+#define GPS_POLL_DEFAULT        (5000u)
 
 class gps_time
 {
 private: /* data */
     TinyGPSPlus *_gps;
     SoftwareSerial *_sserial;
-private: /* methods */
+public: /* methods */
     void display_info();
 public:
     gps_time(uint8_t rx, uint8_t tx);
     void begin();
     void test();
     //
-    void read_gps();
+    bool read_gps(uint16_t poll_time = GPS_POLL_DEFAULT);
     bool location_valid();
     bool time_valid();
     //
