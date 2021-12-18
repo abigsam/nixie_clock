@@ -358,8 +358,12 @@ void bsp_clr_rtc_alarms()
  */
 bool bsp_gps_check_ready()
 {
-    gpst.read_gps();
-    return (gpst.time_valid());
+    if (gpst.read_gps()) {
+        gpst.display_info();
+        return (gpst.time_valid());
+    } else {
+        return false;
+    }
 }
 
 
@@ -376,4 +380,10 @@ DateTime bsp_gps_get_time()
                     gpst.get_hour(),
                     gpst.get_minute(),
                     gpst.get_second());
+}
+
+
+void bsp_gps_test()
+{
+    gpst.test();
 }

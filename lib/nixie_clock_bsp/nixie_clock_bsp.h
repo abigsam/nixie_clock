@@ -36,5 +36,6 @@ void bsp_point(bool enable);
 //Work with GPS
 bool bsp_gps_check_ready();
 DateTime bsp_gps_get_time();
+void bsp_gps_test();
 
 #endif //__NIXIE_CLOCK_BSP_H
