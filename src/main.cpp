@@ -12,6 +12,7 @@ DateTime curr_time;
 uint8_t update_time = 0u, update_decimal = 0u;
 uint16_t cnt_mode = 0u;
 bool decimal_state = false;
+uint32_t loop_cnt = 0u;
 
 //Functions defines
 void onAlarm();
@@ -29,6 +30,7 @@ void setup () {
     //For GPS
     Serial.begin(9600);
     bsp_led(false);
+    loop_cnt = 0u;
 }
 
 //Main loop ***************************************************************************************
@@ -50,7 +52,29 @@ void loop () {
 
     timer.tick(); // tick the timer
 
-    // gpst.test();
+    if (0u == loop_cnt % 10000u) {
+        bsp_led(true);
+        if (bsp_gps_check_ready()) {
+            DateTime gps_time = bsp_gps_get_time();
+            Serial.println("\nGPS time is valid");
+            Serial.print("Data ");
+            Serial.print(gps_time.year(), DEC);   Serial.print("-");
+            Serial.print(gps_time.month(), DEC);  Serial.print("-");
+            Serial.print(gps_time.day(), DEC);    Serial.println(" ");
+            Serial.print("Time ");
+            Serial.print(gps_time.hour(), DEC);   Serial.print(":");
+            Serial.print(gps_time.minute(), DEC); Serial.print(":");
+            Serial.print(gps_time.second(), DEC); Serial.print("\n");
+        } else {
+            Serial.println("GPS is not ready");
+            bsp_led(false);
+        }
+        // bsp_led(false);
+    }
+
+    // if (0u == loop_cnt % 1000u) {
+    //     bsp_gps_test();
+    // }
 
     // if (bsp_read_btn(BTN_MODE)) {
     //     cnt_mode++;
@@ -65,6 +89,7 @@ void loop () {
     //         bsp_get_current_time(curr_time);
     //     }
     // }
+    loop_cnt++;
 }
 
 /**
@@ -72,7 +97,6 @@ void loop () {
  */
 void onAlarm()
 {
-    bsp_led(true);
     update_time++;
 }
 
