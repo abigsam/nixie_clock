@@ -10,11 +10,18 @@
 #define SWITCH_MODE_100MS           (400u)
 #define DIGIT_BLINK_100MS           (400u)
 
+#define GPS_UPDATE_ALARM            ("2021-12-19T03:00:00")
+
 typedef enum {
     BTN_MINUS = BTN_MINUS_PIN,
     BTN_PLUS = BTN_PLUS_PIN,
     BTN_MODE = BTN_MODE_PIN
 } bsp_btn_t;
+
+typedef enum {
+    RTC_ALARM_GPS_UPDATE = (1u << 0),
+    RTC_ALARM_TIME_UPDATE = (1u << 1)
+} rtc_alarm_t;
 
 //Public functiones
 void bsp_init();
@@ -27,6 +34,7 @@ void bsp_display_clear();
 void bsp_get_current_time(DateTime &current_time);
 void bsp_set_new_time(const DateTime &current_time);
 void bsp_clr_rtc_alarms();
+uint8_t bsp_check_alarm();
 //Control periphery
 void bsp_led(bool en);
 void bsp_gps_power(bool en);

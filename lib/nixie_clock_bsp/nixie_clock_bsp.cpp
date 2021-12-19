@@ -90,9 +90,9 @@ static void decode_time(DateTime *time)
 
 
 /**
- * @brief 
+ * @brief Decode integer value to the decimals
  * 
- * @param value 
+ * @param value     Integer value in the range 0...9999
  */
 static void decode_digit(uint16_t value)
 {
@@ -126,23 +126,22 @@ static void rtc_init()
 
     // set alarm 1, 2 flag to false (so alarm 1, 2 didn't happen so far)
     // if not done, this easily leads to problems, as both register aren't reset on reboot/recompile
-    // rtc.clearAlarm(1);
-    // rtc.clearAlarm(2);
     bsp_clr_rtc_alarms();
     // stop oscillating signals at SQW Pin
     // otherwise setAlarm1 will fail
     rtc.writeSqwPinMode(DS3231_OFF);
-    // turn off alarm 1
-    rtc.disableAlarm(1);
+    //Alarm every GPS_UPDATE_ALARM for run GPS update
+    // rtc.disableAlarm(1);
+    rtc.setAlarm1(DateTime(GPS_UPDATE_ALARM), DS3231_A1_Hour);
     //Alarm once per minute (whenever seconds are 00)
     rtc.setAlarm2(DateTime(0u,0u,0u), DS3231_A2_PerMinute);
 }
 
 /**
- * @brief 
+ * @brief Display BCDs on display
  * 
- * @param dspl 
- * @param value 
+ * @param dspl      Digitals, can be one of the SET_BCD_MINUTES, SET_BCD_HOURS
+ * @param value     Integer value in range 0..99
  */
 static void display_bcd(display_bcd_t dspl, uint8_t value)
 {
@@ -157,9 +156,9 @@ static void display_bcd(display_bcd_t dspl, uint8_t value)
 }
 
 /**
- * @brief 
+ * @brief Clear display
  * 
- * @param dspl 
+ * @param dspl      Digitals, can be one of the SET_BCD_MINUTES, SET_BCD_HOURS
  */
 static void display_bcd_clr(display_bcd_t dspl)
 {
@@ -225,22 +224,49 @@ void bsp_set_new_time(const DateTime &current_time)
     rtc.adjust(current_time);
 }
 
+
+/**
+ * @brief Control BCD LED
+ * 
+ * @param en    True for enable on-board LED
+ */
 void bsp_led(bool en)
 {
     digitalWrite(BOARD_LED_PIN, (en ? HIGH : LOW));
 }
 
+
+/**
+ * @brief Control GPS power
+ * 
+ * @param en    True for enable GPS power
+ */
 void bsp_gps_power(bool en)
 {
     digitalWrite(EN_GPS_PIN, (en ? HIGH : LOW));
 }
 
+
+/**
+ * @brief Read on-board button state
+ * 
+ * @param btn       Button type, can be one of the BTN_MINUS, BTN_PLUS, BTN_MODE
+ * @return true     Choosen button is pressed
+ * @return false    Choosen button is unpressed
+ */
 bool bsp_read_btn(bsp_btn_t btn)
 {
     return (digitalRead((uint8_t)btn) == 0 ? true : false);
 }
 
 
+/**
+ * @brief Change set mode for clock
+ * 
+ * @param current_time      Return changed time
+ * @return true             Time has been changed by user
+ * @return false            Time has not been changed by user
+ */
 bool bsp_mode_set(DateTime &current_time)
 {
     bool active_loop = true, time_changed = false, digit_en = true;
@@ -351,6 +377,26 @@ void bsp_clr_rtc_alarms()
 
 
 /**
+ * @brief Check what alarm is goes
+ * 
+ * @return rtc_alarm_t      Alarm type, on of the or ORed value RTC_ALARM_GPS_UPDATE, RTC_ALARM_TIME_UPDATE
+ */
+uint8_t bsp_check_alarm()
+{
+    uint8_t result = 0u;
+    if (rtc.alarmFired(1)) {
+        result |= RTC_ALARM_GPS_UPDATE;
+        rtc.clearAlarm(1);
+    }
+    if (rtc.alarmFired(2)) {
+        result |= RTC_ALARM_TIME_UPDATE;
+        rtc.clearAlarm(2);
+    }
+    return result;
+}
+
+
+/**
  * @brief Check if GPS has valid date/time date
  * 
  * @return true     If GPS has valid date/time
@@ -359,7 +405,6 @@ void bsp_clr_rtc_alarms()
 bool bsp_gps_check_ready()
 {
     if (gpst.read_gps()) {
-        gpst.display_info();
         return (gpst.time_valid());
     } else {
         return false;
@@ -383,6 +428,10 @@ DateTime bsp_gps_get_time()
 }
 
 
+/**
+ * @brief For testing GPS
+ * 
+ */
 void bsp_gps_test()
 {
     gpst.test();
