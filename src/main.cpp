@@ -9,67 +9,78 @@ auto timer = timer_create_default(); // create a timer with default settings
 
 //Global variables
 DateTime curr_time;
-uint8_t update_time = 0u, update_decimal = 0u;
+uint8_t alarm_type = 0u;
 uint16_t cnt_mode = 0u;
-bool decimal_state = false;
+bool decimal_state = false, blink_decimal_en = false, irc_alarm_on = false, time_update = false;
 uint32_t loop_cnt = 0u;
 
 //Functions defines
-void onAlarm();
-bool blinkDecimal(void *);
+void IRQ_rtc_alarm();
+bool IRQ_blink_timer(void *);
 
 //Startup setup ***********************************************************************************
 void setup () {
     bsp_init(); //Init all
     bsp_led(true);
     // Making it so, that the alarm will trigger an interrupt
-    attachInterrupt(digitalPinToInterrupt(RTC_INTERRUPT_PIN), onAlarm, FALLING);
-    update_time = 1u;
+    attachInterrupt(digitalPinToInterrupt(RTC_INTERRUPT_PIN), IRQ_rtc_alarm, FALLING);
     //Blink decimal every 500 mS
-    timer.every(500, blinkDecimal);
+    timer.every(500, IRQ_blink_timer);
     //For GPS
     Serial.begin(9600);
     bsp_led(false);
+    //Configure internal variables
+    irc_alarm_on = false; 
+    time_update = true; //Update time after startup
+    blink_decimal_en = true;
     loop_cnt = 0u;
+    alarm_type = 0u;
 }
 
 //Main loop ***************************************************************************************
 void loop () {
 
-    if (update_time > 0u)
+    if (irc_alarm_on) {
+        alarm_type = bsp_check_alarm();
+        irc_alarm_on = false;
+    }
+
+
+    if (time_update || (alarm_type & RTC_ALARM_TIME_UPDATE))
     {
-        bsp_clr_rtc_alarms();
+        //Disable all flags
+        time_update = false;
+        alarm_type &= ~RTC_ALARM_TIME_UPDATE;
+        //Read time from RTC and display it
         bsp_get_current_time(curr_time);
         bsp_display_time(&curr_time);
-        update_time = 0u;
-    }
-    else if (update_decimal > 0u)
-    {
-        decimal_state = !decimal_state;
-        bsp_point(decimal_state);
-        update_decimal = 0u;
+        //For debug
+        Serial.print("Display updated ");
+        Serial.print(curr_time.hour()); Serial.print(":");
+        Serial.println(curr_time.minute());
     }
 
     timer.tick(); // tick the timer
 
-    if (0u == loop_cnt % 10000u) {
-        bsp_led(true);
+    //Update time from GPS
+    if (0u == loop_cnt % 10000u && (alarm_type & RTC_ALARM_GPS_UPDATE)) {
         if (bsp_gps_check_ready()) {
+            alarm_type &= ~RTC_ALARM_GPS_UPDATE;
             DateTime gps_time = bsp_gps_get_time();
-            Serial.println("\nGPS time is valid");
-            Serial.print("Data ");
-            Serial.print(gps_time.year(), DEC);   Serial.print("-");
-            Serial.print(gps_time.month(), DEC);  Serial.print("-");
-            Serial.print(gps_time.day(), DEC);    Serial.println(" ");
-            Serial.print("Time ");
-            Serial.print(gps_time.hour(), DEC);   Serial.print(":");
-            Serial.print(gps_time.minute(), DEC); Serial.print(":");
-            Serial.print(gps_time.second(), DEC); Serial.print("\n");
+            // Serial.println("\nGPS time is valid");
+            // Serial.print("Data ");
+            // Serial.print(gps_time.year(), DEC);   Serial.print("-");
+            // Serial.print(gps_time.month(), DEC);  Serial.print("-");
+            // Serial.print(gps_time.day(), DEC);    Serial.println(" ");
+            // Serial.print("Time ");
+            // Serial.print(gps_time.hour(), DEC);   Serial.print(":");
+            // Serial.print(gps_time.minute(), DEC); Serial.print(":");
+            // Serial.print(gps_time.second(), DEC); Serial.print("\n");
+            bsp_set_new_time(gps_time);
+            bsp_led(true); //For debug
         } else {
-            Serial.println("GPS is not ready");
-            bsp_led(false);
+            // Serial.println("GPS is not ready");
         }
-        // bsp_led(false);
     }
 
     // if (0u == loop_cnt % 1000u) {
@@ -95,17 +106,20 @@ void loop () {
 /**
  * @brief RTC alarm interrupt
  */
-void onAlarm()
+void IRQ_rtc_alarm()
 {
-    update_time++;
+    irc_alarm_on = true;
 }
 
 
 /**
  * @brief Timer for decimal blinking
  */
-bool blinkDecimal(void *)
+bool IRQ_blink_timer(void *)
 {
-    update_decimal++;
+    if (blink_decimal_en) {
+        decimal_state = !decimal_state;
+        bsp_point(decimal_state);
+    }
     return true; // repeat? true
 }
