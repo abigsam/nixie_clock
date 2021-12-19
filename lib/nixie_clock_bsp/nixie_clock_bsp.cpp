@@ -1,6 +1,11 @@
 #include "nixie_clock_bsp.h"
 #include "../../include/nixie_clock_defines.h"
 #include "gps_time.h"
+#include <EEPROM.h>
+
+#define CONFIG_EEPROM_START_ADDR        ((int) 0)
+#define SECONDS_IN_HOUR                 ((int32_t)3600)
+
 
 //Create private objects **************************************************************************
 nixie_display ndisplay;
@@ -417,14 +422,18 @@ bool bsp_gps_check_ready()
  * 
  * @return DateTime     GPS date and time
  */
-DateTime bsp_gps_get_time()
+DateTime bsp_gps_get_time(int8_t utc_offset)
 {
-    return DateTime(gpst.get_year(),
-                    gpst.get_month(),
-                    gpst.get_day(),
-                    gpst.get_hour(),
-                    gpst.get_minute(),
-                    gpst.get_second());
+    DateTime gps_time = DateTime(gpst.get_year(),
+                                 gpst.get_month(),
+                                 gpst.get_day(),
+                                 gpst.get_hour(),
+                                 gpst.get_minute(),
+                                 gpst.get_second());
+    if (utc_offset != 0) {
+        gps_time = gps_time + TimeSpan((int32_t)utc_offset * SECONDS_IN_HOUR);
+    }
+    return gps_time;
 }
 
 
@@ -435,4 +444,44 @@ DateTime bsp_gps_get_time()
 void bsp_gps_test()
 {
     gpst.test();
+}
+
+
+/**
+ * @brief Read clock configuration from EEPROM
+ * 
+ * @param config    Reference to external RAM variable
+ * @return true     c
+ * @return false    c
+ */
+bool bsp_read_config(clock_config_t &config)
+{
+    EEPROM.get(CONFIG_EEPROM_START_ADDR, config);
+    return (CONFIG_VALID_VALUE == config.valid);
+}
+
+
+/**
+ * @brief Update clock configuration to the EEPROM
+ * 
+ * @param config    New configuration value
+ */
+void bsp_update_coinfig(const clock_config_t *config)
+{
+    uint8_t *ptr = (uint8_t *) config;
+    for (auto i = 0ULL; i < sizeof(clock_config_t); i++) {
+        EEPROM.update((CONFIG_EEPROM_START_ADDR + 1), *(ptr + i));
+    }
+}
+
+
+void bsp_print_config(const clock_config_t &config)
+{
+    Serial.println("Configuration:");
+    Serial.print(" valid = 0x");
+    Serial.println(config.valid, HEX);
+    Serial.print(" gps_upd_en = ");
+    Serial.println(config.gps_upd_en, DEC);
+    Serial.print(" utc_offset = ");
+    Serial.println(config.utc_offset, DEC);
 }
