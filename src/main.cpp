@@ -2,50 +2,67 @@
 #include "nixie_clock_bsp.h"
 #include <arduino-timer.h>
 
-#define ENTER_MODE          (20u)
+#define ENTER_MODE                  (20u)
+#define CLOCK_DEFAULT_CONFIG        (clock_config_t{CONFIG_VALID_VALUE, (uint8_t)1u, (int8_t)+2})
 
-//Create objects
+
+//Create objects **********************************************************************************
 auto timer = timer_create_default(); // create a timer with default settings
 
-//Global variables
+
+//Global variables ********************************************************************************
 DateTime curr_time, gps_time;
 uint8_t alarm_type = 0u;
 uint16_t cnt_mode = 0u;
 bool decimal_state = false, blink_decimal_en = false, irc_alarm_on = false, time_update = false;
 uint32_t loop_cnt = 0u;
+clock_config_t clock_config;
 
-//Functions defines
+
+//Functions defines *******************************************************************************
 void IRQ_rtc_alarm();
 bool IRQ_blink_timer(void *);
+
 
 //Startup setup ***********************************************************************************
 void setup () {
     bsp_init(); //Init all
-    bsp_led(true);
-    // Making it so, that the alarm will trigger an interrupt
-    attachInterrupt(digitalPinToInterrupt(RTC_INTERRUPT_PIN), IRQ_rtc_alarm, FALLING);
-    //Blink decimal every 500 mS
-    timer.every(500, IRQ_blink_timer);
-    //For GPS
+    bsp_led(true); //Configuration started
+    //For debug
     Serial.begin(9600);
-    bsp_led(false);
+    //Add IRQ for alarm
+    attachInterrupt(digitalPinToInterrupt(RTC_INTERRUPT_PIN), IRQ_rtc_alarm, FALLING);
+    //Configure time to blink decimal every 500 mS
+    timer.every(500, IRQ_blink_timer);
+    //Read clock configuration froom EEPROM
+    if (!bsp_read_config(clock_config)) {
+        clock_config = CLOCK_DEFAULT_CONFIG;
+        bsp_update_coinfig(&clock_config);
+    }
+    // bsp_print_config(clock_config); //For debug
     //Configure internal variables
-    irc_alarm_on = false; 
+    irc_alarm_on = false;
+    alarm_type = 0u;
     time_update = true; //Update time after startup
     blink_decimal_en = true;
     loop_cnt = 0u;
-    alarm_type = 0u;
+    //Configuration ended
+    bsp_led(false);
 }
 
 //Main loop ***************************************************************************************
 void loop () {
 
+    //Timer for decimal point blinking
+    timer.tick();
+
+    //Read RTC to figure out what alarm is goes
     if (irc_alarm_on) {
         alarm_type |= bsp_check_alarm();
         irc_alarm_on = false;
     }
 
-
+    //Update time on display
     if (time_update || (alarm_type & RTC_ALARM_TIME_UPDATE))
     {
         //Disable all flags
@@ -60,14 +77,12 @@ void loop () {
         Serial.println(curr_time.minute());
     }
 
-    timer.tick(); // tick the timer
-
     //Update time from GPS
-    if (0u == loop_cnt % 10000u && (alarm_type & RTC_ALARM_GPS_UPDATE)) {
+    if ((clock_config.gps_upd_en) && (0u == loop_cnt % 10000u) && (alarm_type & RTC_ALARM_GPS_UPDATE)) {
         bsp_led(true); //For debug
         if (bsp_gps_check_ready()) {
             alarm_type &= ~RTC_ALARM_GPS_UPDATE;
-            gps_time = bsp_gps_get_time();
+            gps_time = bsp_gps_get_time(clock_config.utc_offset);
             // Serial.println("GPS time is valid");
             // Serial.print("Data ");
             // Serial.print(gps_time.year(), DEC);   Serial.print("-");
