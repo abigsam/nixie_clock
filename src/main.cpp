@@ -8,7 +8,7 @@
 auto timer = timer_create_default(); // create a timer with default settings
 
 //Global variables
-DateTime curr_time;
+DateTime curr_time, gps_time;
 uint8_t alarm_type = 0u;
 uint16_t cnt_mode = 0u;
 bool decimal_state = false, blink_decimal_en = false, irc_alarm_on = false, time_update = false;
@@ -41,7 +41,7 @@ void setup () {
 void loop () {
 
     if (irc_alarm_on) {
-        alarm_type = bsp_check_alarm();
+        alarm_type |= bsp_check_alarm();
         irc_alarm_on = false;
     }
 
@@ -64,10 +64,11 @@ void loop () {
 
     //Update time from GPS
     if (0u == loop_cnt % 10000u && (alarm_type & RTC_ALARM_GPS_UPDATE)) {
+        bsp_led(true); //For debug
         if (bsp_gps_check_ready()) {
             alarm_type &= ~RTC_ALARM_GPS_UPDATE;
-            DateTime gps_time = bsp_gps_get_time();
-            // Serial.println("\nGPS time is valid");
+            gps_time = bsp_gps_get_time();
+            // Serial.println("GPS time is valid");
             // Serial.print("Data ");
             // Serial.print(gps_time.year(), DEC);   Serial.print("-");
             // Serial.print(gps_time.month(), DEC);  Serial.print("-");
@@ -80,6 +81,7 @@ void loop () {
             bsp_led(true); //For debug
         } else {
             // Serial.println("GPS is not ready");
+            bsp_led(false); //For debug
         }
     }
 
