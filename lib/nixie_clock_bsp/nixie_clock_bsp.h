@@ -9,7 +9,7 @@
 #define EXIT_FROM_MODE_100MS        (100u)
 #define SWITCH_MODE_100MS           (400u)
 #define DIGIT_BLINK_100MS           (400u)
-#define GPS_UPDATE_ALARM            ("2021-12-19T13:52:00")
+#define GPS_UPDATE_ALARM            ("2021-12-19T03:00:00")
 #define CONFIG_VALID_VALUE          ((uint8_t) 0xAB)
 
 typedef enum {
