@@ -139,7 +139,7 @@ uint8_t* nixie_display::set_display_buffer(uint8_t digit_num, char value)
 {
     uint8_t reg_num = 0u, mask = 0u;
     uint8_t *ptr = clr_display_buffer(digit_num);
-    if (value >= '0' || value <= '9') {
+    if (value >= '0' && value <= '9') {
         reg_num = pgm_read_byte_near(ptr + (value - '0')*2u);
         mask = pgm_read_byte_near(ptr + (value - '0')*2u + 1u);
         arr[reg_num] |= mask;
