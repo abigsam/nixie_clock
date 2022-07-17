@@ -2,7 +2,8 @@
 #include "nixie_clock_bsp.h"
 #include <arduino-timer.h>
 
-#define ENTER_MODE                  (20u)
+#define DEBUG_MODE                  (0)
+#define ENTER_MODE                  (10000u)
 #define CLOCK_DEFAULT_CONFIG        (clock_config_t{CONFIG_VALID_VALUE, (uint8_t)1u, (int8_t)+2})
 
 
@@ -28,8 +29,9 @@ bool IRQ_blink_timer(void *);
 void setup () {
     bsp_init(); //Init all
     bsp_led(true); //Configuration started
-    //For debug
-    Serial.begin(9600);
+    if (DEBUG_MODE) {
+        Serial.begin(9600);
+    }
     //Add IRQ for alarm
     attachInterrupt(digitalPinToInterrupt(RTC_INTERRUPT_PIN), IRQ_rtc_alarm, FALLING);
     //Configure time to blink decimal every 500 mS
@@ -71,10 +73,11 @@ void loop () {
         //Read time from RTC and display it
         bsp_get_current_time(curr_time);
         bsp_display_time(&curr_time);
-        //For debug
-        Serial.print("Display updated ");
-        Serial.print(curr_time.hour()); Serial.print(":");
-        Serial.println(curr_time.minute());
+        if (DEBUG_MODE) {
+            Serial.print("Display updated ");
+            Serial.print(curr_time.hour()); Serial.print(":");
+            Serial.println(curr_time.minute());
+        }
     }
 
     //Update time from GPS
@@ -83,40 +86,50 @@ void loop () {
         if (bsp_gps_check_ready()) {
             alarm_type &= ~RTC_ALARM_GPS_UPDATE;
             gps_time = bsp_gps_get_time(clock_config.utc_offset);
-            // Serial.println("GPS time is valid");
-            // Serial.print("Data ");
-            // Serial.print(gps_time.year(), DEC);   Serial.print("-");
-            // Serial.print(gps_time.month(), DEC);  Serial.print("-");
-            // Serial.print(gps_time.day(), DEC);    Serial.println(" ");
-            // Serial.print("Time ");
-            // Serial.print(gps_time.hour(), DEC);   Serial.print(":");
-            // Serial.print(gps_time.minute(), DEC); Serial.print(":");
-            // Serial.print(gps_time.second(), DEC); Serial.print("\n");
+            if (DEBUG_MODE) {
+                Serial.println("GPS time is valid");
+                Serial.print("Data ");
+                Serial.print(gps_time.year(), DEC);   Serial.print("-");
+                Serial.print(gps_time.month(), DEC);  Serial.print("-");
+                Serial.print(gps_time.day(), DEC);    Serial.println(" ");
+                Serial.print("Time ");
+                Serial.print(gps_time.hour(), DEC);   Serial.print(":");
+                Serial.print(gps_time.minute(), DEC); Serial.print(":");
+                Serial.print(gps_time.second(), DEC); Serial.print("\n");
+            }
             bsp_set_new_time(gps_time);
             bsp_led(true); //For debug
         } else {
-            // Serial.println("GPS is not ready");
+            if (DEBUG_MODE) {
+                Serial.println("GPS is not ready");
+            }
             bsp_led(false); //For debug
         }
     }
 
-    // if (0u == loop_cnt % 1000u) {
-    //     bsp_gps_test();
-    // }
+    //Configure time
+    if (bsp_read_btn(BTN_MODE)) {
+        cnt_mode++;
+    } else {
+        if (cnt_mode > 0)
+            cnt_mode--;
+    }
 
-    // if (bsp_read_btn(BTN_MODE)) {
-    //     cnt_mode++;
-    // }
+    if (cnt_mode > ENTER_MODE) {
+        cnt_mode = 0u;
 
-    // if (cnt_mode > ENTER_MODE) {
-    //     cnt_mode = 0u;
-    //     bool is_changed = bsp_mode_set(curr_time);
-    //     if (is_changed) {
-    //         bsp_set_new_time(curr_time);
-    //     } else {
-    //         bsp_get_current_time(curr_time);
-    //     }
-    // }
+        blink_decimal_en = false;
+        bsp_point(true);
+
+        bool is_changed = bsp_mode_set(curr_time);
+        if (is_changed) {
+            bsp_set_new_time(curr_time);
+        } else {
+            bsp_get_current_time(curr_time);
+        }
+
+        blink_decimal_en = true;
+    }
     loop_cnt++;
 }
 
