@@ -177,6 +177,7 @@ static void display_bcd_clr(display_bcd_t dspl)
     ndisplay.display_update();
 }
 
+
 /**
  * @brief Display time
  * 
@@ -354,6 +355,8 @@ bool bsp_mode_set(DateTime &current_time)
         current_time = DateTime(current_time.year(), current_time.month(), current_time.day(), hours, minutes, 0u);
     }
 
+    while(bsp_read_btn(BTN_MODE)) {}
+
     return time_changed;
 }
 
@@ -433,6 +436,25 @@ DateTime bsp_gps_get_time(int8_t utc_offset)
     if (utc_offset != 0) {
         gps_time = gps_time + TimeSpan((int32_t)utc_offset * SECONDS_IN_HOUR);
     }
+    return gps_time;
+}
+
+
+/**
+ * @brief Read GPS date/time and correct current time seconds and minutes
+ * 
+ * @param curr_time     Reference to the current time (from RTC)
+ * @return DateTime     Corrected timu (only seconds and minutes)
+ */
+DateTime bsp_gps_get_corrected_time(const DateTime &curr_time)
+{
+    DateTime gps_time = DateTime(curr_time.year(),
+                                 curr_time.month(),
+                                 curr_time.day(),
+                                 curr_time.hour(),
+                                 gpst.get_minute(),
+                                 gpst.get_second());
+    //
     return gps_time;
 }
 

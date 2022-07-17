@@ -6,9 +6,9 @@
 #include "RTClib.h"
 
 #define HIDE_HOUR_TENS_IF_ZERO      (1)
-#define EXIT_FROM_MODE_100MS        (100u)
-#define SWITCH_MODE_100MS           (400u)
-#define DIGIT_BLINK_100MS           (400u)
+#define EXIT_FROM_MODE_100MS        (90u)
+#define SWITCH_MODE_100MS           (40u)
+#define DIGIT_BLINK_100MS           (4u)
 #define GPS_UPDATE_ALARM            ("2021-12-19T03:00:00")
 #define CONFIG_VALID_VALUE          ((uint8_t) 0xAB)
 
@@ -50,6 +50,7 @@ void bsp_point(bool enable);
 //Work with GPS
 bool bsp_gps_check_ready();
 DateTime bsp_gps_get_time(int8_t utc_offset = 0);
+DateTime bsp_gps_get_corrected_time(const DateTime &curr_time);
 void bsp_gps_test();
 //EEPROM
 bool bsp_read_config(clock_config_t &config);
